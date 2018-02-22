@@ -1,0 +1,204 @@
+SELECT * FROM DBA_DATA_FILES;
+
+SELECT * FROM DBA_TABLESPACES;
+SELECT TABLESPACE_NAME "TABLESPACE",
+   INITIAL_EXTENT "INITIAL_EXT",
+   NEXT_EXTENT "NEXT_EXT",
+   MIN_EXTENTS "MIN_EXT",
+   MAX_EXTENTS "MAX_EXT",
+   PCT_INCREASE
+   FROM DBA_TABLESPACES;
+
+SELECT  FILE_NAME, BLOCKS, TABLESPACE_NAME
+FROM DBA_DATA_FILES;
+
+CREATE TABLESPACE donni DATAFILE '/u01/app/oracle/oradata/DONNI' SIZE 50M; 
+
+-- MANAGING USERS
+-- Creating a New User
+-- Database Authentication
+SELECT * FROM ALL_USERS;
+SELECT * FROM DBA_TS_QUOTAS;
+
+CREATE USER aaron
+IDENTIFIED BY soccer
+DEFAULT TABLESPACE data
+TEMPORARY TABLESPACE temp
+QUOTA 15M ON data
+QUOTA 10M ON users
+PASSWORD EXPIRE;
+
+CREATE USER aaron
+IDENTIFIED BY soccer
+DEFAULT TABLESPACE system
+TEMPORARY TABLESPACE temp
+QUOTA 15M ON system
+QUOTA 10M ON users
+PASSWORD EXPIRE;
+
+-- Changing User Quota on Tablespaces
+ALTER USER aaron
+QUOTA 0 ON USERS;
+
+-- Dropping a User
+DROP USER aaron;
+-- Use the CASCADE clause to drop all objects in the schema if the schema contains objects.
+DROP USER aaron CASCADE;
+
+-- Obtaining User Information
+SELECT * FROM DBA_USERS;
+SELECT * FROM DBA_TS_QUOTAS;
+
+
+-- MANAGING PRIVILEGES
+-- System Privileges: Examples
+-- INDEX
+CREATE ANY INDEX
+ALTER ANY INDEX
+DROP ANY INDEX
+-- TABLE
+CREATE TABLE
+CREATE ANY TABLE
+ALTER ANY TABLE
+DROP ANY TABLE
+SELECT ANY TABLE
+UPDATE ANY TABLE
+DELETE ANY TABLE
+-- SESSION
+CREATE SESSION
+ALTER SESSION
+RESTRICTED SESSION
+-- TABLESPACE
+CREATE TABLESPACE
+ALTER TABLESPACE
+DROP TABLESPACE
+UNLIMITED TABLESPACE
+
+-- Granting System Privileges
+GRANT CREATE SESSION TO emi;
+GRANT CREATE SESSION TO aaron;
+GRANT CREATE SESSION TO emi WITH ADMIN OPTION;
+GRANT CREATE SESSION TO aaron WITH ADMIN OPTION;
+GRANT CREATE TABLE TO aaron WITH ADMIN OPTION;
+
+-- SYSDBA and SYSOPER Privileges
+-- SYSOPER
+STARTUP
+SHUTDOWN
+ALTER DATABASE OPEN | MOUNT
+ALTER DATABASE BACKUP CONTROLFILE TO
+RECOVER DATABASE
+ALTER DATABASE ARCHIVELOG
+RESTRICTED SESSION
+-- SYSDBA
+SYSOPER PRIVILEGES WITH ADMIN OPTION
+CREATE DATABASE
+ALTER TABLESPACE BEGIN/END BACKUP
+RESTRICTED SESSION
+RECOVER DATABASE UNTIL
+
+
+-- paramater O7_DICTIONARY_ACCESSIBILITY
+-- https://lalitkumarb.wordpress.com/tag/o7_dictionary_accessibility/
+SHOW PARAMETER O7;
+
+REVOKE CREATE TABLE FROM emi;
+REVOKE CREATE TABLE FROM aaron;
+
+-- Granting Object Privileges
+GRANT EXECUTE ON dbms_output TO jeff;
+GRANT UPDATE ON emi.customers TO jeff WITH
+GRANT OPTION;
+
+-- Revoking Object Privileges
+REVOKE SELECT ON emi.orders FROM jeff;
+
+-- Obtaining Privileges Information
+SELECT * FROM DBA_SYS_PRIVS
+SELECT * FROM SESSION_PRIVS
+SELECT * FROM DBA_TAB_PRIVS
+SELECT * FROM DBA TAB PRIVS
+SELECT * FROM DBA_COL_PRIVS
+
+
+-- MANAGING ROLES
+-- Creating Roles
+SELECT * FROM DBA_ROLES;
+
+CREATE ROLE oe_clerk;
+
+CREATE ROLE hr_clerk
+IDENTIFIED BY bonus;
+
+CREATE ROLE hr_manager
+IDENTIFIED EXTERNALLY;
+
+-- Modifying Roles
+ALTER ROLE oe_clerk
+IDENTIFIED BY order;
+
+ALTER ROLE hr_clerk
+IDENTIFIED EXTERNALLY;
+
+ALTER ROLE hr_manager
+NOT IDENTIFIED;
+
+-- Assigning Roles
+GRANT oe_clerk TO scott;
+GRANT oe_clerk TO aaron;
+GRANT hr_clerk TO hr_manager;
+GRANT hr_manager TO scott WITH ADMIN OPTION;
+
+-- Establishing Default Roles
+ALTER USER scott
+DEFAULT ROLE hr_clerk, oe_clerk;
+
+ALTER USER scott DEFAULT ROLE ALL;
+
+ALTER USER scott DEFAULT ROLE ALL EXCEPT
+hr_clerk;
+
+ALTER USER scott DEFAULT ROLE NONE;
+ALTER USER aaron DEFAULT ROLE NONE;
+
+-- Enabling and Disabling Roles
+SET ROLE hr_clerk;
+SET ROLE oe_clerk IDENTIFIED BY order;
+SET ROLE ALL EXCEPT oe_clerk;
+SET ROLE NONE; 
+
+-- Revoking Roles from Users
+REVOKE oe_clerk FROM scott;
+REVOKE oe_clerk FROM aaron;
+REVOKE hr_manager FROM PUBLIC;
+
+-- Removing Roles
+DROP ROLE hr_manager;
+DROP ROLE oe_clerk;
+
+-- Obtaining Role Information
+SELECT * FROM DBA_ROLES;
+SELECT * FROM DBA_ROLE_PRIVS;
+SELECT * FROM ROLE_ROLE_PRIVS;
+SELECT * FROM DBA_SYS_PRIVS;
+SELECT * FROM ROLE_SYS_PRIVS;
+SELECT * FROM ROLE_TAB_PRIVS;
+SELECT * FROM SESSION_ROLES;
+
+
+SElECT * FROM V$SESSION;
+
+select
+       substr(a.spid,1,9) pid,
+       substr(b.sid,1,5) sid,
+       substr(b.serial#,1,5) ser#,
+       substr(b.machine,1,6) box,
+       substr(b.username,1,10) username,
+--       b.server,
+       substr(b.osuser,1,8) os_user,
+       substr(b.program,1,30) program
+from v$session b, v$process a
+where
+b.paddr = a.addr
+and type='USER'
+order by spid; 
